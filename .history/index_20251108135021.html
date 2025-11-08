@@ -1,0 +1,961 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AkashaAvas - All-in-One Real Estate Platform</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+      Lucide Icons for modern icons
+      Changed CDN from unpkg to jsdelivr.
+      Added an onload callback 'initLucideIcons()' to ensure we only call createIcons() after the script has fully loaded.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide-icons@0.341.0/dist/umd/lucide.min.js" onload="initLucideIcons()"></script>
+    
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #0f172a; /* slate-900 */
+        }
+
+        /* Futuristic glowing effect */
+        .glow-effect {
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        .glow-effect-button {
+            box-shadow: 0 0 10px #6366f1, 0 0 20px #6366f1, 0 0 30px #818cf8;
+            transition: all 0.3s ease-in-out;
+        }
+        .glow-effect-button:hover {
+            box-shadow: 0 0 20px #6366f1, 0 0 30px #818cf8, 0 0 40px #a5b4fc;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #6366f1, 0 0 10px #6366f1, 0 0 15px #818cf8;
+            }
+            to {
+                text-shadow: 0 0 10px #6366f1, 0 0 15px #818cf8, 0 0 20px #a5b4fc;
+            }
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* slate-200 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6366f1; /* indigo-500 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5; /* indigo-600 */
+        }
+
+        /* Active nav link style */
+        .nav-link-active {
+            color: #6366f1; /* indigo-500 */
+            font-weight: 600;
+            border-bottom: 2px solid #6366f1;
+        }
+        
+        /* Tab styles */
+        .tab-btn {
+            @apply px-4 py-2 rounded-lg font-medium transition-colors;
+        }
+        .tab-btn-active {
+            @apply bg-indigo-600 text-white shadow-md;
+        }
+        .tab-btn-inactive {
+            @apply text-gray-600 hover:bg-gray-100;
+        }
+
+        /* Page content default */
+        .page-content {
+            display: none; /* Hidden by default */
+        }
+        
+        /* Modal backdrop */
+        .modal-backdrop {
+            @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50;
+            display: none; /* Hidden by default */
+        }
+        
+        /* AI Chat bubble */
+        #ai-chat-bubble {
+            @apply fixed bottom-8 right-8 bg-indigo-600 text-white p-4 rounded-full shadow-lg cursor-pointer glow-effect-button z-40;
+        }
+        #ai-chat-window {
+            @apply fixed bottom-24 right-8 w-80 h-96 bg-white rounded-lg shadow-2xl z-40 flex flex-col;
+            display: none; /* Hidden by default */
+        }
+        
+        /* Styles for prose content on legal pages (with increased spacing) */
+        .prose h2 {
+            @apply text-2xl font-semibold mb-6 text-slate-800; /* Increased margin */
+        }
+        .prose p {
+            @apply mb-6 text-gray-700; /* Increased margin */
+        }
+        .prose ul {
+            @apply list-disc list-inside mb-6 text-gray-700; /* Increased margin */
+        }
+        .prose a {
+            @apply text-indigo-600 hover:underline;
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-30">
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- Logo/Brand -->
+            <div>
+                <a href="#" class="text-2xl font-bold text-indigo-600 glow-effect" onclick="showPage('home')">
+                    AkashaAvas
+                </a>
+                <span class="block text-xs text-gray-500">A ChitraHarshaVPK Venture</span>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#" class="nav-link text-gray-700 hover:text-indigo-600" id="nav-home" onclick="showPage('home', this)">Home</a>
+                <a href="#" class="nav-link text-gray-700 hover:text-indigo-600" id="nav-search" onclick="showPage('search', this)">Find Property</a>
+                <a href="#" class="nav-link text-gray-700 hover:text-indigo-600" id="nav-list" onclick="showPage('list', this)">List Property</a>
+                <a href="#" class="nav-link text-gray-700 hover:text-indigo-600" id="nav-services" onclick="showPage('services', this)">Hi-Tech Services</a>
+                <a href="#" class="nav-link text-gray-700 hover:text-indigo-600" id="nav-about" onclick="showPage('about', this)">About</a>
+            </div>
+
+            <!-- Auth Buttons -->
+            <div class="flex items-center space-x-3">
+                <button id="login-register-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:bg-indigo-700 transition-colors">
+                    Login / Register
+                </button>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                    <i-lucide name="menu"></i-lucide>
+                </button>
+            </div>
+        </nav>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden bg-white shadow-lg hidden">
+            <a href="#" class="block px-5 py-3 text-gray-700 hover:bg-gray-50" onclick="showPage('home')">Home</a>
+            <a href="#" class="block px-5 py-3 text-gray-700 hover:bg-gray-50" onclick="showPage('search')">Find Property</a>
+            <a href="#" class="block px-5 py-3 text-gray-700 hover:bg-gray-50" onclick="showPage('list')">List Property</a>
+            <a href="#" class="block px-5 py-3 text-gray-700 hover:bg-gray-50" onclick="showPage('services')">Hi-Tech Services</a>
+            <a href="#" class="block px-5 py-3 text-gray-700 hover:bg-gray-50" onclick="showPage('about')">About</a>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-4">
+
+        <!-- Page: Home -->
+        <section id="home-content" class="page-content">
+            <!-- Hero Section -->
+            <div class="bg-white p-8 rounded-lg shadow-xl border border-gray-100">
+                <h1 class="text-4xl font-bold mb-4">Find Your Future Home, PG, or Apartment</h1>
+                <p class="text-lg text-gray-600 mb-6">Powered by AI and secured by Blockchain. The all-in-one "Made in India" real estate platform.</p>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" placeholder="Enter location, landmark, or project" class="flex-grow p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select class="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option>All Property Types</option>
+                        <option>Flat / Apartment</option>
+                        <option>PG (Paying Guest)</option>
+                        <option>Real Estate (Land)</option>
+                        <option>Commercial</option>
+                    </select>
+                    <button class="bg-indigo-600 text-white p-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors glow-effect-button">
+                        Search
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div class="mt-12">
+                <h2 class="text-3xl font-bold text-center mb-8">Why AkashaAvas?</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Feature: AI/ML -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                        <i-lucide name="brain-circuit" class="w-12 h-12 text-indigo-600 mb-4"></i-lucide>
+                        <h3 class="text-xl font-semibold mb-2">Advanced AI/ML Models</h3>
+                        <p class="text-gray-600">Our NLP models understand your queries. Get hyper-personalized recommendations and property insights.</p>
+                    </div>
+                    <!-- Feature: Security -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                        <i-lucide name="shield-check" class="w-12 h-12 text-green-600 mb-4"></i-lucide>
+                        <h3 class="text-xl font-semibold mb-2">Unmatched Security</h3>
+                        <p class="text-gray-600">Quantum-level encryption and Blockchain management protect your data. Fully compliant with Indian Govt. acts.</p>
+                    </div>
+                    <!-- Feature: Hi-Tech -->
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                        <i-lucide name="map" class="w-12 h-12 text-blue-600 mb-4"></i-lucide>
+                        <h3 class="text-xl font-semibold mb-2">Google Maps Integrated</h3>
+                        <p class="text-gray-600">Explore nearby flats, PGs, and amenities with deep Google Maps integration. Find exactly what's around you.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- NEW: Our Commitment Section -->
+            <div class="mt-12 bg-white p-8 rounded-lg shadow-xl border border-gray-100">
+                <h2 class="text-3xl font-bold text-center mb-8">Our Commitment to You</h2>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div>
+                        <i-lucide name="database" class="w-12 h-12 text-indigo-600 mx-auto mb-4"></i-lucide>
+                        <h3 class="text-xl font-semibold mb-2">Robust Backend & Cloud</h3>
+                        <p class="text-gray-600">Built on a scalable cloud database infrastructure (Google Cloud BigQuery principles) for speed and reliability, supporting all our AI/ML and NLP modules.</p>
+                    </div>
+                    <div>
+                        <i-lucide name="scan-eye" class="w-12 h-12 text-indigo-600 mx-auto mb-4"></i-lucide>
+                        <h3 class="text-xl font-semibold mb-2">Proactive Security</h3>
+                        <p class="text-gray-600">We employ high-level security, dark web monitoring, and active malware/phishing detection to protect your data 24/7.</p>
+                    </div>
+                    <div>
+                        <i-lucide name="award" class="w-12 h-12 text-indigo-600 mx-auto mb-4"></i-lucide>
+                        <h3 class="text-xl font-semibold mb-2">Platform Compliance</h3>
+                        <p class="text-gray-600">We adhere to all rules and regulations set by online platforms and search engines, ensuring a trustworthy and reliable service.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Find Property -->
+        <section id="search-content" class="page-content">
+            <h1 class="text-3xl font-bold mb-6">Search Properties</h1>
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Filters -->
+                <div class="w-full lg:w-1/4 bg-white p-6 rounded-lg shadow-lg border">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Filters</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="font-medium">Property Type</label>
+                            <select class="w-full p-2 border rounded-lg mt-1">
+                                <option>All</option>
+                                <option>Flat / Apartment</option>
+                                <option>PG (Paying Guest)</option>
+                                <option>Land</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-medium">Price Range</label>
+                            <input type="range" class="w-full mt-1">
+                            <span class="text-sm text-gray-500">₹0 - ₹5,00,00,000+</span>
+                        </div>
+                        <div>
+                            <label class="font-medium">Hi-Tech Facilities</label>
+                            <div class="space-y-1 mt-1">
+                                <label class="flex items-center"><input type="checkbox" class="rounded mr-2"> Smart Home</label>
+                                <label class="flex items-center"><input type="checkbox" class="rounded mr-2"> EV Charging</label>
+                                <label class="flex items-center"><input type="checkbox" class="rounded mr-2"> 5G Ready</label>
+                                <label class="flex items-center"><input type="checkbox" class="rounded mr-2"> Biometric Security</label>
+                            </div>
+                        </div>
+                        <button class="w-full bg-indigo-600 text-white p-3 rounded-lg font-medium hover:bg-indigo-700">Apply Filters</button>
+                    </div>
+                </div>
+
+                <!-- Map and Listings -->
+                <div class="w-full lg:w-3/4">
+                    <!-- Google Maps Placeholder -->
+                    <div id="map-placeholder" class="h-96 w-full bg-gray-200 rounded-lg shadow-inner border flex items-center justify-center">
+                        <div class="text-center p-4">
+                            <i-lucide name="map-pinned" class="w-16 h-16 text-gray-500 mx-auto"></i-lucide>
+                            <h3 class="text-xl font-semibold text-gray-600 mt-2">Google Maps Integration</h3>
+                            <p class="text-gray-500">The interactive map of properties would load here.</p>
+                            <button class="mt-4 bg-white border border-gray-400 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 text-gray-700">
+                                <i-lucide name="locate-fixed" class="inline w-5 h-5 mr-2"></i-lucide>
+                                Find Near Me
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Listings -->
+                    <div class="mt-6">
+                        <h3 class="text-2xl font-semibold mb-4">Showing 3 Properties</h3>
+                        <!-- Sample Property Card 1 -->
+                        <div class="bg-white p-4 rounded-lg shadow-md border flex flex-col md:flex-row gap-4 mb-4">
+                            <img src="https://placehold.co/200x150/e0e7ff/6366f1?text=Property+Image" alt="Property" class="w-full md:w-48 h-40 md:h-auto object-cover rounded-lg">
+                            <div class="flex-grow">
+                                <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full">Flat / Apartment</span>
+                                <h4 class="text-xl font-bold mt-2 hover:text-indigo-600 cursor-pointer">3 BHK Luxury Apartment</h4>
+                                <p class="text-gray-500 text-sm"><i-lucide name="map-pin" class="inline w-4 h-4 mr-1"></i-L>Koregaon Park, Pune</p>
+                                <p class="text-2xl font-bold text-indigo-700 mt-2">₹ 2.5 Cr</p>
+                                <div class="text-gray-600 text-sm mt-2 space-x-4">
+                                    <span><i-lucide name="bed-double" class="inline w-4 h-4 mr-1"></i-lucide>3 Beds</span>
+                                    <span><i-lucide name="bath" class="inline w-4 h-4 mr-1"></i-lucide>3 Baths</span>
+                                    <span><i-lucide name="ruler" class="inline w-4 h-4 mr-1"></i-lucide>1800 sqft</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sample Property Card 2 -->
+                        <div class="bg-white p-4 rounded-lg shadow-md border flex flex-col md:flex-row gap-4 mb-4">
+                            <img src="https://placehold.co/200x150/e0f2fe/0891b2?text=PG+Room" alt="Property" class="w-full md:w-48 h-40 md:h-auto object-cover rounded-lg">
+                            <div class="flex-grow">
+                                <span class="bg-cyan-100 text-cyan-700 text-xs font-semibold px-2 py-1 rounded-full">PG (Paying Guest)</span>
+                                <h4 class="text-xl font-bold mt-2 hover:text-indigo-600 cursor-pointer">Modern Co-Living PG</h4>
+                                <p class="text-gray-500 text-sm"><i-lucide name="map-pin" class="inline w-4 h-4 mr-1"></i-lucide>HSR Layout, Bangalore</p>
+                                <p class="text-2xl font-bold text-indigo-700 mt-2">₹ 15,000 / month</p>
+                                <div class="text-gray-600 text-sm mt-2 space-x-4">
+                                    <span><i-lucide name="user" class="inline w-4 h-4 mr-1"></i-lucide>Twin Sharing</span>
+                                    <span><i-lucide name="wifi" class="inline w-4 h-4 mr-1"></i-lucide>High-Speed WiFi</span>
+                                    <span><i-lucide name="utility-pole" class="inline w-4 h-4 mr-1"></i-lucide>All Utilities Inc.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: List Property -->
+        <section id="list-content" class="page-content">
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
+                <h1 class="text-3xl font-bold mb-6">List Your Property</h1>
+                <p class="text-gray-600 mb-6">Reach millions of buyers and tenants. Fill in the details below to get started.</p>
+                <form class="space-y-4">
+                    <div>
+                        <label class="font-medium">Property Type</label>
+                        <select class="w-full p-2 border rounded-lg mt-1">
+                            <option>Flat / Apartment</option>
+                            <option>PG (Paying Guest)</option>
+                            <option>Land</option>
+                            <option>Commercial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-medium">Property Title</label>
+                        <input type="text" placeholder="e.g., 'Spacious 2BHK with Park View'" class="w-full p-2 border rounded-lg mt-1">
+                    </div>
+                    <div>
+                        <label class="font-medium">Location / Address</label>
+                        <input type="text" placeholder="Enter full address" class="w-full p-2 border rounded-lg mt-1">
+                    </div>
+                    <div>
+                        <label class="font-medium">Description</label>
+                        <textarea placeholder="Describe your property..." rows="4" class="w-full p-2 border rounded-lg mt-1"></textarea>
+                    </div>
+                    <div>
+                        <label class="font-medium">Upload Photos (Image Scan Feature)</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <i-lucide name="image" class="mx-auto h-12 w-12 text-gray-400"></i-lucide>
+                                <p class="text-sm text-gray-600">
+                                    <span class="font-semibold text-indigo-600 cursor-pointer">Upload a file</span> or drag and drop
+                                </p>
+                                <p class="text-xs text-gray-500">Our AI will scan images for details (Mock)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 glow-effect-button">
+                        Submit for Verification
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Page: Hi-Tech Services -->
+        <section id="services-content" class="page-content">
+            <h1 class="text-3xl font-bold mb-6">Hi-Tech Services</h1>
+            <p class="text-lg text-gray-600 mb-8">Beyond listings. We provide AI-powered tools for a smarter real estate experience.</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                
+                <!-- Service: Currency Converter -->
+                <div class="bg-white p-6 rounded-lg shadow-lg border">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold mb-2">Live Currency Conversion</h3>
+                        <span class="flex items-center text-sm text-green-600">
+                            <i-lucide name="refresh-cw" class="w-4 h-4 mr-1 animate-spin"></i-lucide>
+                            Live
+                        </span>
+                    </div>
+                    <p class="text-gray-600 mb-4">For our global users and NRI investors. Live tracking of exchange rates.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="font-medium">From</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="number" value="100" class="w-2/3 p-2 border rounded-lg">
+                                <select class="w-1/3 p-2 border rounded-lg">
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>AED</option>
+                                    <option>GBP</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-medium">To</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="text" value="8345.00" class="w-2/3 p-2 border rounded-lg bg-gray-100" readonly>
+                                <select class="w-1/3 p-2 border rounded-lg">
+                                    <option>INR</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 text-center mt-2">Live rates (via API) would appear here. This is a non-functional demo.</p>
+                    </div>
+                </div>
+
+                <!-- Service: 3D Modeling -->
+                <div class="bg-white p-6 rounded-lg shadow-lg border">
+                    <i-lucide name="view" class="w-12 h-12 text-indigo-600 mb-4"></i-lucide>
+                    <h3 class="text-xl font-semibold mb-2">3D Modeling & Virtual Tours</h3>
+                    <p class="text-gray-600 mb-4">Visualize your future home. Our partners provide cutting-edge 3D modeling and virtual walk-throughs.</p>
+                    <div class="h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <p class="text-gray-500">3D Model Viewer Placeholder</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Page: About -->
+        <section id="about-content" class="page-content">
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
+                <h1 class="text-3xl font-bold mb-6">About AkashaAvas</h1>
+                <span class="text-lg font-semibold text-indigo-600">A ChitraHarshaVPK Venture</span>
+                <div class="prose mt-4">
+                    <p>AkashaAvas is a "Made in India" initiative by ChitraHarshaVPK Ventures, designed to revolutionize the Indian real estate market. Our platform is built on a foundation of cutting-edge technology, including advanced AI/ML models, NLP, and robust blockchain security.</p>
+                    
+                    <h2>Our Technology</h2>
+                    <p>We are fully compliant with all Indian Government rules, regulations, and policies, ensuring a transparent and secure experience for all users. Our database infrastructure is designed for massive scale and security, in line with national data sovereignty guidelines.</p>
+                    
+                    <h2>Security & Compliance</h2>
+                    <p>Your trust is our top priority. We employ high-level, quantum-ready security protocols, continuous dark web monitoring for credential leaks, and active malware and phishing detection systems. Our platform is built to comply with all major online platform and search engine (e.g., Google Chrome) security and privacy standards, ensuring your data is safe and our service is reliable.</p>
+                    
+                    <h2>Our Mission</h2>
+                    <p>Our mission is to provide an all-in-one solution for flats, apartments, PGs, and all real-estate needs, making the process of finding or selling property simple, intelligent, and secure.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- NEW PAGE: FAQs -->
+        <section id="faqs-content" class="page-content">
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
+                <h1 class="text-3xl font-bold mb-6">Frequently Asked Questions (FAQs)</h1>
+                <div class="prose space-y-6">
+                    <div>
+                        <h2 class="font-semibold text-lg text-slate-800">What is AkashaAvas?</h2>
+                        <p>AkashaAvas is an all-in-one, AI-powered real estate platform by ChitraHarshaVPK Ventures. We help you find, buy, sell, or rent flats, apartments, and PGs across India, all while using the latest technology for security and personalization.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-lg text-slate-800">How is my data secured?</h2>
+                        <p>We use a multi-layered security approach, including quantum-level encryption, blockchain management for data integrity, and continuous dark web monitoring. Our systems are fully compliant with Indian Government data policies.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-lg text-slate-800">What is the "AI Assistant"?</h2>
+                        <p>Our AI Assistant is an advanced NLP (Natural Language Processing) model that can help you with your property search. You can ask it complex questions like "Find me a 3BHK apartment near a school in Koregaon Park with smart home features," and it will provide you with personalized results.</p>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-lg text-slate-800">What is "The ChitraHarsha VPK Pay"?</h2>
+                        <p>It is our in-built, secure payment gateway for handling transactions, rent payments, and service fees. We also support cryptocurrency payments for eligible transactions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- NEW PAGE: Privacy Policy -->
+        <section id="privacy-content" class="page-content">
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
+                <h1 class="text-3xl font-bold mb-6">Privacy Policy</h1>
+                <div class="prose">
+                    <p><em>Last updated: November 8, 2025</em></p>
+                    <p>AkashaAvas ("us", "we", or "our") operates the AkashaAvas website (the "Service"). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.</p>
+                    
+                    <h2>Data We Collect</h2>
+                    <p>We collect several different types of information for various purposes to provide and improve our Service to you. This includes, but is not limited to: Email address, Phone number, Personal ID (Aadhaar/PAN), Bank Details (if provided), and Usage Data.</p>
+                    
+                    <h2>Use of Data</h2>
+                    <p>AkashaAvas uses the collected data for various purposes:</p>
+                    <ul>
+                        <li>To provide and maintain our Service</li>
+                        <li>To notify you about changes to our Service</li>
+                        <li>To allow you to participate in interactive features of our Service</li>
+                        <li>To provide customer support</li>
+                        <li>To monitor the usage of our Service</li>
+                        <li>To detect, prevent, and address technical issues, malware, and phishing threats.</li>
+                    </ul>
+                    
+                    <h2>Data Security</h2>
+                    <p>The security of your data is important to us. We use advanced, quantum-level encryption protocols, blockchain management for data integrity, and continuous dark web monitoring to protect your data. All data is stored in secure, government-compliant cloud databases.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- NEW PAGE: Terms & Conditions -->
+        <section id="terms-content" class="page-content">
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
+                <h1 class="text-3xl font-bold mb-6">Terms and Conditions</h1>
+                <div class="prose">
+                    <p><em>Last updated: November 8, 2025</em></p>
+                    <p>Please read these Terms and Conditions ("Terms", "Terms and Conditions") carefully before using the AkashaAvas website (the "Service") operated by ChitraHarshaVPK Ventures.</p>
+                    <p>Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms. These Terms apply to all visitors, users, and others who access or use the Service.</p>
+
+                    <h2>Accounts</h2>
+                    <p>When you create an account with us, you must provide information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service. You are responsible for safeguarding the password and any passkeys used to access the Service.</p>
+                    
+                    <h2>Intellectual Property</h2>
+                    <p>The Service and its original content, features, and functionality are and will remain the exclusive property of ChitraHarshaVPK Ventures and its licensors. The Service is protected by copyright, trademark, and other laws of both India and foreign countries.</p>
+                    
+                    <h2>Governing Law</h2>
+                    <p>These Terms shall be governed and construed in accordance with the laws of India, without regard to its conflict of law provisions.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300 mt-16">
+        <div class="container mx-auto p-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2">AkashaAvas</h3>
+                    <p class="text-sm">By ChitraHarshaVPK Ventures</p>
+                    <p class="text-sm mt-2">Pioneering AI-Driven Innovations in Real Estate. Made in India.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-3">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white" onclick="showPage('home')">Home</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showPage('search')">Find Property</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showPage('about')">About Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-3">Legal & Support</h4>
+                    <ul class="space-y-2">
+                        <!-- UPDATED FOOTER LINKS -->
+                        <li><a href="#" class="hover:text-white" onclick="showPage('faqs')">FAQs</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showPage('privacy')">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showPage('terms')">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-3">Get in Touch</h4>
+                    <p>contact@chitradarshavpk.com</p>
+                    <!-- Social media icons placeholder -->
+                </div>
+            </div>
+            <div class="border-t border-slate-700 mt-8 pt-6 text-center text-sm">
+                &copy; <span id="current-year"></span> AkashaAvas by ChitraHarshaVPK Ventures. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Chat Assistant -->
+    <div id="ai-chat-bubble">
+        <i-lucide name="bot"></i-lucide>
+    </div>
+    <div id="ai-chat-window">
+        <!-- Header -->
+        <div class="p-4 bg-indigo-600 text-white rounded-t-lg">
+            <h3 class="font-semibold">Akasha AI Assistant</h3>
+        </div>
+        <!-- Chat Body -->
+        <div class="flex-grow p-4 overflow-y-auto space-y-3">
+            <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                <p class="text-sm">Hello! How can I help you find your perfect property today?</p>
+            </div>
+            <div class="bg-indigo-100 p-3 rounded-lg max-w-xs ml-auto">
+                <p class="text-sm">Find me a 2BHK flat near HSR Layout with smart home features.</p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                <p class="text-sm">Searching... I found 3 properties matching your criteria. Would you like to see them?</p>
+            </div>
+        </div>
+        <!-- Input -->
+        <div class="p-2 border-t">
+            <input type="text" placeholder="Ask me anything..." class="w-full p-2 border rounded-lg focus:outline-none">
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Login/Register Modal -->
+    <div id="auth-modal" class="modal-backdrop">
+        <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-2xl flex flex-col overflow-hidden">
+            <!-- Close Button -->
+            <button id="close-auth-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+                <i-lucide name="x" class="w-8 h-8"></i-lucide>
+            </button>
+            
+            <div class="flex flex-col md:flex-row flex-grow">
+                <!-- Left Pane (Branding) -->
+                <div class="w-full md:w-1/3 bg-indigo-600 p-8 text-white flex-col justify-center items-center hidden md:flex">
+                    <h2 class="text-3xl font-bold mb-4 glow-effect">AkashaAvas</h2>
+                    <p class="text-center text-indigo-100">Your secure, AI-powered "Made in India" property platform.</p>
+                    <i-lucide name="shield-check" class="w-24 h-24 mt-8 opacity-50"></i-lucide>
+                </div>
+
+                <!-- Right Pane (Form) -->
+                <div class="w-full md:w-2/3 p-8 overflow-y-auto">
+                    <!-- Tabs -->
+                    <div class="flex border-b mb-6">
+                        <button id="login-tab-btn" class="tab-btn">Login</button>
+                        <button id="register-tab-btn" class="tab-btn">New User Registration</button>
+                        <button id="company-tab-btn" class="tab-btn">Company/Job Login</button>
+                    </div>
+
+                    <!-- Login Tab -->
+                    <div id="login-tab-content" class="space-y-4">
+                        <h3 class="text-2xl font-bold">Welcome Back</h3>
+                        <div>
+                            <label class="font-medium">Username (Email/Mobile No.)</label>
+                            <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="font-medium">Password</label>
+                            <input type="password" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <a href="#" class="text-sm text-indigo-600 hover:underline">Forgot Password?</a>
+                            <button class="bg-indigo-600 text-white p-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 glow-effect-button">Login</button>
+                        </div>
+                        <div class="text-center my-4 text-gray-500">OR</div>
+                        <button class="w-full p-3 border rounded-lg flex items-center justify-center hover:bg-gray-50">
+                            <i-lucide name="key" class="w-5 h-5 mr-2"></i-lucide>
+                            Sign in with Passkey
+                        </button>
+                    </div>
+                    
+                    <!-- New User Registration Tab -->
+                    <div id="register-tab-content" class="hidden space-y-4">
+                        <h3 class="text-2xl font-bold">Create New Account</h3>
+                        <p class="text-sm text-gray-500">As per your PDF specification for "The ChitraHarshaVPK Ventures".</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-medium">Create Username (Email/Mobile No.)</label>
+                                <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                            <div>
+                                <label class="font-medium">Create Password (min 8 characters)</label>
+                                <input type="password" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="font-medium">Address / Street</label>
+                            <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="font-medium">City</label>
+                                <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                            <div>
+                                <label class="font-medium">State</label>
+                                <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                            <div>
+                                <label class="font-medium">Pin Code</label>
+                                <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-medium">Mobile Number</label>
+                                <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                            <div>
+                                <label class="font-medium">Enter Email ID</label>
+                                <input type="email" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                        </div>
+                        
+                        <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                            <p class="font-semibold text-indigo-700">Verification</p>
+                            <p class="text-sm text-gray-600">OTP will be sent to your Email & Mobile. (Passkey & Special Authenticator features will be activated post-verification).</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                <label class="font-medium">ID Proof (Aadhaar/PAN)</label>
+                                <input type="text" placeholder="Enter ID Number" class="w-full p-2 border rounded-lg mt-1">
+                            </div>
+                            <div>
+                                <label class="font-medium">Applying for Job Role?</label>
+                                <select class="w-full p-2 border rounded-lg mt-1">
+                                    <option>No (Standard User)</option>
+                                    <option>HR Department</option>
+                                    <option>Finance Department</option>
+                                    <option>CEO Department</option>
+                                    <option>Brainstorming Department</option>
+                                    <option>Data Analyst Department</option>
+                                    <option>Data Scientist Department</option>
+                                    <option>Research & Development</option>
+                                    <option>Shareholders Department</option>
+                                    <option>Meeting Rooms Department</option>
+                                    <option>CCTV Monitoring Department</option>
+                                    <option>Interior Designer Department</option>
+                                    <option>Transport Department</option>
+                                    <option>Emergency Conditions Department</option>
+                                    <option>Cleaning Staff Department</option>
+                                    <option>Support Staff (Peon)</option>
+                                    <option>Content Creator</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <h4 class="text-lg font-semibold text-gray-700">Bank Account Details (Optional)</h4>
+                            <p class="text-sm text-gray-500 mb-2">Required for listing properties or job roles.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="font-medium">Account Number</label>
+                                    <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                                </div>
+                                <div>
+                                    <label class="font-medium">Bank Name</label>
+                                    <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                                </div>
+                                <div>
+                                    <label class="font-medium">IFSC Code</label>
+                                    <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 glow-effect-button">
+                            Register & Create Virtual ID
+                        </button>
+                    </div>
+                    
+                    <!-- Company/Job Login Tab -->
+                    <div id="company-tab-content" class="hidden space-y-4">
+                        <h3 class="text-2xl font-bold">Company & Staff Login</h3>
+                        <p class="text-sm text-gray-500">For registered employees and content creators.</p>
+                        <select class="w-full p-2 border rounded-lg">
+                            <option>Company User Login</option>
+                            <option>Software Login</option>
+                            <option>Social Media Login (Content Creation)</option>
+                            <option>Admin / Founder Login</option>
+                        </select>
+                        <div>
+                            <label class="font-medium">Username (Email/Mobile No.)</label>
+                            <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="font-medium">Password</label>
+                            <input type="password" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="font-medium">Virtual ID Card Name</label>
+                            <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="font-medium">Passkey / Authenticator</label>
+                            <input type="text" class="w-full p-2 border rounded-lg mt-1">
+                        </div>
+                        <button class="w-full bg-gray-800 text-white p-3 rounded-lg font-semibold hover:bg-black">
+                            Secure Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal-backdrop">
+        <div class="bg-white w-full max-w-md rounded-lg shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold">Freemium Upgrade</h3>
+                <button id="close-payment-modal" class="text-gray-400 hover:text-gray-600">
+                    <i-lucide name="x" class="w-6 h-6"></i-lucide>
+                </button>
+            </div>
+            <p class="text-gray-600 mb-6">Choose your preferred payment method to unlock premium features.</p>
+            <div class="space-y-4">
+                <!-- Option 1: UPI -->
+                <button class="w-full p-4 border-2 border-indigo-600 rounded-lg flex items-center hover:bg-indigo-50">
+                    <img src="https://placehold.co/40x40/6366f1/ffffff?text=PAY" class="rounded-full" alt="UPI">
+                    <div class="ml-4 text-left">
+                        <p class="font-bold text-lg text-indigo-700">The ChitraHarsha VPK Pay</p>
+                        <p class="text-sm text-gray-600">Pay securely via UPI</p>
+                    </div>
+                </button>
+                <!-- Option 2: Crypto -->
+                <button class="w-full p-4 border-2 border-gray-300 rounded-lg flex items-center hover:bg-gray-50">
+                     <img src="https://placehold.co/40x40/f59e0b/ffffff?text=C" class="rounded-full" alt="Crypto">
+                    <div class="ml-4 text-left">
+                        <p class="font-bold text-lg text-gray-800">Cryptocurrency</p>
+                        <p class="text-sm text-gray-600">Pay with CHC, BTC, ETH, and more</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript -->
+    <script>
+        // This function is called by the 'onload' event on the lucide script tag
+        function initLucideIcons() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                console.log('Lucide icons initialized successfully.');
+            } else {
+                console.error('Lucide icons script loaded, but lucide object not found.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+
+            // --- Page Navigation Logic ---
+            const pages = document.querySelectorAll('.page-content');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            window.showPage = (pageId, clickedLink = null) => {
+                // Hide all pages
+                pages.forEach(page => {
+                    page.style.display = 'none';
+                });
+                
+                // Remove active class from all nav links
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-link-active');
+                });
+
+                // Show the requested page
+                const activePage = document.getElementById(`${pageId}-content`);
+                if (activePage) {
+                    activePage.style.display = 'block';
+                } else {
+                    console.error('Page not found:', pageId);
+                    // Fallback to home if page not found
+                    document.getElementById('home-content').style.display = 'block';
+                    document.getElementById('nav-home').classList.add('nav-link-active');
+                    return;
+                }
+
+                // Add active class to the clicked link (if provided and it's a main nav link)
+                if (clickedLink && clickedLink.classList.contains('nav-link')) {
+                    clickedLink.classList.add('nav-link-active');
+                } else {
+                    // If no link provided or it's a footer link, find the matching header link
+                    const correspondingNavLink = document.getElementById(`nav-${pageId}`);
+                    if (correspondingNavLink) {
+                        correspondingNavLink.classList.add('nav-link-active');
+                    }
+                }
+                
+                // Close mobile menu on navigation
+                document.getElementById('mobile-menu').classList.add('hidden');
+                
+                // Scroll to top of page
+                window.scrollTo(0, 0);
+            };
+
+            // Show 'home' page by default
+            showPage('home', document.getElementById('nav-home'));
+
+            // --- Mobile Menu Toggle ---
+            document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            });
+
+            // --- Auth Modal Logic ---
+            const authModal = document.getElementById('auth-modal');
+            const loginRegisterBtn = document.getElementById('login-register-btn');
+            const closeAuthModalBtn = document.getElementById('close-auth-modal');
+
+            loginRegisterBtn.addEventListener('click', () => {
+                authModal.style.display = 'flex';
+                showAuthTab('login'); // Default to login tab
+            });
+            closeAuthModalBtn.addEventListener('click', () => {
+                authModal.style.display = 'none';
+            });
+            
+            // Auth Tab Switching
+            const loginTabBtn = document.getElementById('login-tab-btn');
+            const registerTabBtn = document.getElementById('register-tab-btn');
+            const companyTabBtn = document.getElementById('company-tab-btn');
+            
+            const loginTabContent = document.getElementById('login-tab-content');
+            const registerTabContent = document.getElementById('register-tab-content');
+            const companyTabContent = document.getElementById('company-tab-content');
+            
+            const tabBtns = [loginTabBtn, registerTabBtn, companyTabBtn];
+            const tabContents = [loginTabContent, registerTabContent, companyTabContent];
+
+            const showAuthTab = (tabName) => {
+                tabContents.forEach(tab => tab.classList.add('hidden'));
+                tabBtns.forEach(btn => btn.classList.remove('tab-btn-active', 'bg-indigo-600', 'text-white', 'shadow-md'));
+                tabBtns.forEach(btn => btn.classList.add('tab-btn-inactive', 'text-gray-600', 'hover:bg-gray-100'));
+
+                if(tabName === 'login') {
+                    loginTabContent.classList.remove('hidden');
+                    loginTabBtn.classList.add('tab-btn-active');
+                    loginTabBtn.classList.remove('tab-btn-inactive');
+                } else if(tabName === 'register') {
+                    registerTabContent.classList.remove('hidden');
+                    registerTabBtn.classList.add('tab-btn-active');
+                    registerTabBtn.classList.remove('tab-btn-inactive');
+                } else if(tabName === 'company') {
+                    companyTabContent.classList.remove('hidden');
+                    companyTabBtn.classList.add('tab-btn-active');
+                    companyTabBtn.classList.remove('tab-btn-inactive');
+                }
+            };
+
+            loginTabBtn.addEventListener('click', () => showAuthTab('login'));
+            registerTabBtn.addEventListener('click', () => showAuthTab('register'));
+            companyTabBtn.addEventListener('click', () => showAuthTab('company'));
+            
+            // --- AI Chat Window Logic ---
+            const chatBubble = document.getElementById('ai-chat-bubble');
+            const chatWindow = document.getElementById('ai-chat-window');
+            
+            chatBubble.addEventListener('click', () => {
+                chatWindow.style.display = chatWindow.style.display === 'none' ? 'flex' : 'none';
+            });
+            
+            // --- Payment Modal Logic (Mock Trigger) ---
+            // In a real app, this would be triggered by clicking a "buy" button
+            const paymentModal = document.getElementById('payment-modal');
+            const closePaymentModalBtn = document.getElementById('close-payment-modal');
+            
+            // Example trigger (uncomment to test)
+            // document.body.addEventListener('click', (e) => {
+            //     if(e.target.textContent.includes("Premium")) { // Mock
+            //         paymentModal.style.display = 'flex';
+            //     }
+            // });
+            
+            closePaymentModalBtn.addEventListener('click', () => {
+                paymentModal.style.display = 'none';
+            });
+
+            // Close modals on outside click
+            window.addEventListener('click', (e) => {
+                if(e.target === authModal) {
+                    authModal.style.display = 'none';
+                }
+                if(e.target === paymentModal) {
+                    paymentModal.style.display = 'none';
+                }
+            });
+
+        });
+    </script>
+
+</body>
+</html>
